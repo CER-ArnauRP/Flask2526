@@ -51,3 +51,27 @@
 #       Cada vegada que afegim una dependència, haurem de tornar a fer la 
 #           comanda (perquè actualitzi l'arxiu).
 
+from flask import Flask, render_template
+
+app = Flask(__name__)
+
+
+# Rutes:
+# ======
+
+@app.route("/")
+@app.route("/inici")
+def inici():
+    return render_template("inici.html")
+
+@app.route("/info")
+def pagina_informacio():
+    return "<h1>Info</h1>"
+
+@app.route("/contacte")
+def pagina_contacte():
+    return render_template("contacte.html")
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
