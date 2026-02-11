@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    {% if titol_pagina %}
+    <title>{{ titol_pagina }}</title>
+    {% else %}
+    <title>Títol manual de la pàgina</title>
+    {% endif %}
+</head>
+
+<body>
+
+    {% include "navegacio.html" %}
+
+    {% block contingut %}
+    {% endblock %}
+
+</body>
+
+</html>

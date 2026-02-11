@@ -57,8 +57,12 @@
 #           (prèviament, hem d'haver creat l'entorn virtual)
 
 from flask import Flask, render_template
+import jinja2
 
 app = Flask(__name__)
+app.jinja_env.undefined = jinja2.StrictUndefined # Per fer que es pari en els valors undefined.
+
+print(__name__)
 
 dades_posts = [
     {
@@ -94,8 +98,11 @@ def pagina_informacio():
 
 @app.route("/contacte")
 def pagina_contacte():
-    return render_template("contacte.html")
+    return render_template("contacte.html", titol_pagina="Contacte")
 
+@app.errorhandler(404)
+def pagina_error(e):
+    return render_template("pagina_no_trobada.html"), 404
 
 if __name__ == "__main__":
     app.run(debug=True)

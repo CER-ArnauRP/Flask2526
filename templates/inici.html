@@ -1,34 +1,26 @@
-<!DOCTYPE html>
-<html lang="ca">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inici</title>
-</head>
+{% block contingut %}
 
-<body>
-
-    {% if titol_pagina %}
-    <h1>{{ titol_pagina }}</h1>
-    {% else %}
-    <h1>Títol manual de la pàgina</h1>
-    {% endif %}
+{% if titol_pagina %}
+<h1>{{ titol_pagina }}</h1>
+{% else %}
+<h1>Títol manual de la pàgina</h1>
+{% endif %}
 
 
 
-    <p>{{ primer_paragraf }}</p>
+<p>{{ primer_paragraf }}</p>
 
-    {{ dades[0]["autor"] }}
+{{ dades[0]["autor"] }}
 
-    {% for post in dades %}
+{% for post in dades %}
 
-    <h2>{{ post.titol }}</h2>
-    <p>{{ post.contingut }}</p>
-    <p>Escrit per {{post.autor}} - {{post.data_post}}</p>
-    <br>
+<h2>{{ post.titol }}</h2>
+<p>{{ post.contingut }}</p>
+<p>Escrit per {{post.autor}} - {{post.data_post}}</p>
+<br>
 
-    {% endfor %}
-</body>
+{% endfor %}
 
-</html>
+{% endblock %}
