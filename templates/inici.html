@@ -8,9 +8,27 @@
 </head>
 
 <body>
-    <h1>Benvinguts a la pàgina d'inici</h1>
 
-    <p>Aquest és un paràgraf d'exemple creat per a la teva aplicació Flask.</p>
+    {% if titol_pagina %}
+    <h1>{{ titol_pagina }}</h1>
+    {% else %}
+    <h1>Títol manual de la pàgina</h1>
+    {% endif %}
+
+
+
+    <p>{{ primer_paragraf }}</p>
+
+    {{ dades[0]["autor"] }}
+
+    {% for post in dades %}
+
+    <h2>{{ post.titol }}</h2>
+    <p>{{ post.contingut }}</p>
+    <p>Escrit per {{post.autor}} - {{post.data_post}}</p>
+    <br>
+
+    {% endfor %}
 </body>
 
 </html>

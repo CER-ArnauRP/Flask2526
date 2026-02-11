@@ -51,18 +51,42 @@
 #       Cada vegada que afegim una dependència, haurem de tornar a fer la 
 #           comanda (perquè actualitzi l'arxiu).
 
+# Per descarregar les dependències del projecte, a partir de l'arxiu 
+#   requirements.txt, fer:
+#       pip install -r requirements.txt
+#           (prèviament, hem d'haver creat l'entorn virtual)
+
 from flask import Flask, render_template
 
 app = Flask(__name__)
 
+dades_posts = [
+    {
+        "autor": "Nom 1",
+        "titol": "Títol del post 1",
+        "contingut": "Contingut del post 1 escrit.",
+        "data_post": "11 de febrer de 2026 - 16:49"
+    },
+    {
+        "autor": "Nom 2",
+        "titol": "Títol del post 2",
+        "contingut": "Contingut del post 2 escrit.",
+        "data_post": "11 de febrer de 2026 - 16:50"
+    },
+]
 
 # Rutes:
 # ======
-
 @app.route("/")
 @app.route("/inici")
 def inici():
-    return render_template("inici.html")
+    variable_calculada = "Pàgina inicial"
+    return render_template(
+        "inici.html", 
+        titol_pagina=variable_calculada, 
+        primer_paragraf="Aquest és el primer paràgraf",
+        dades = dades_posts
+        )
 
 @app.route("/info")
 def pagina_informacio():
