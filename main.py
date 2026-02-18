@@ -56,7 +56,7 @@
 #       pip install -r requirements.txt
 #           (prèviament, hem d'haver creat l'entorn virtual)
 
-from flask import Flask, render_template
+from flask import Flask, render_template, request, url_for, redirect
 import jinja2
 
 app = Flask(__name__)
@@ -83,7 +83,7 @@ dades_posts = [
 # ======
 @app.route("/")
 @app.route("/inici")
-def inici():
+def pagina_inici():
     variable_calculada = "Pàgina inicial"
     return render_template(
         "inici.html", 
@@ -99,6 +99,22 @@ def pagina_informacio():
 @app.route("/contacte")
 def pagina_contacte():
     return render_template("contacte.html", titol_pagina="Contacte")
+
+@app.route("/registre", methods=["GET", "POST"])
+def pagina_registre():
+    # Acció de la ruta en mode POST
+    if request.method == "POST":
+        
+        nom_rebut = request.form["nom"]
+        email_rebut = request.form["email"]
+        password_rebut = request.form["password"]
+        
+        print(f"{nom_rebut} - {email_rebut} - {password_rebut}")
+
+        return redirect(url_for("pagina_inici"))
+    
+    # Acció de la ruta en mode GET.
+    return render_template("registre.html", titol_pagina="Registre")
 
 @app.errorhandler(404)
 def pagina_error(e):
