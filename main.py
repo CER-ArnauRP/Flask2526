@@ -59,6 +59,8 @@
 from flask import Flask, render_template, request, url_for, redirect
 import jinja2
 
+import hashlib, binascii, os
+
 app = Flask(__name__)
 app.jinja_env.undefined = jinja2.StrictUndefined # Per fer que es pari en els valors undefined.
 
@@ -100,6 +102,30 @@ def pagina_informacio():
 def pagina_contacte():
     return render_template("contacte.html", titol_pagina="Contacte")
 
+def troba_hash_password(password_str: str) -> str:
+
+    # Hi ha una manera de trobar passwords d'usuaris que es diu "rainbow tables".
+    # rainbow tables: consisteix en generar molts passwords, i per cada un aplicar-li 
+    # les diferents funcions de hash que hi ha. Cada resultat d'aquests hash, es guarda
+    # en una taula (rainbow table). Això es pot anar fent sense temps real (per exemple, 
+    # durant una setmana). Els passwords triats acostumen a ser passwords habituals
+    # estadísticament (que la gent fa servir), o altres.
+    # Si algú obté accés a la BD on hi ha els hash dels passwords guardats, pot mirar 
+    # amb aquesta taula si està aquell hash a la taula. Si hi és, ja sap el password.
+    # Les rainbow tables tenen una estructura de dades que fa que les cerques siguin molt 
+    # ràpides (poden tenir milions de registres).
+
+    salt = os.urandom(16) # Forma un salt de 16 bytes.
+    # Diem que faci un hash concatenant els 16 byte del salt, més els del password.
+    hash_en_bytes = hashlib.sha256(salt + password_str.encode("utf-8")).digest()
+    salt_i_hash_en_bytes = salt + hash_en_bytes # Els concatenem.
+    # Passem el salt i hash concatenats a string.
+    salt_i_hash_en_str = binascii.hexlify(salt_i_hash_en_bytes).decode("utf-8")
+
+    print(salt_i_hash_en_str)
+
+    return salt_i_hash_en_str
+
 @app.route("/registre", methods=["GET", "POST"])
 def pagina_registre():
     # Acció de la ruta en mode POST
@@ -111,6 +137,9 @@ def pagina_registre():
         
         print(f"{nom_rebut} - {email_rebut} - {password_rebut}")
 
+        hash_password = troba_hash_password(password_rebut)
+
+        # El valor de url_for, és el nom de la funció, no de la ruta.
         return redirect(url_for("pagina_inici"))
     
     # Acció de la ruta en mode GET.
