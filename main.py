@@ -56,15 +56,32 @@
 #       pip install -r requirements.txt
 #           (prèviament, hem d'haver creat l'entorn virtual)
 
+# Base de dades utilitzada:
+#   PostgreSQL (postgres)
+#   Dependència per utilitzar-la des de Python: psycopg2-binary
+#   Dependència per utilitzar posgres amb funcions des de Flask: flask_sqlalchemy
+
 from flask import Flask, render_template, request, url_for, redirect
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 import jinja2
 
 import hashlib, binascii, os
+
+from strings_configuracio import StringsConfiguracio
+from extensions import db
+
 
 app = Flask(__name__)
 app.jinja_env.undefined = jinja2.StrictUndefined # Per fer que es pari en els valors undefined.
 
 print(__name__)
+
+
+# BD ==================================
+app.config.from_object(StringsConfiguracio)
+db.init_app(app)
+# =====================================
+
 
 dades_posts = [
     {
