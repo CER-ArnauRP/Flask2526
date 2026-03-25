@@ -45,6 +45,9 @@
 # Ara ja podem afegir la dependència de Flask. Per fer-ho:
 #   pip install flask
 #       pip és el gestor de dependències de Python.
+#
+# Desinstal·lar una dependència:
+#   pip uninstall <nom_dependencia>
 
 # Per crear l'arxiu que llista les dependències del projecte:
 #   pip freeze > requirements.txt
@@ -70,6 +73,8 @@ import hashlib, binascii, os
 from strings_configuracio import StringsConfiguracio
 from extensions import db
 
+from models.usuari import Usuari
+
 
 app = Flask(__name__)
 app.jinja_env.undefined = jinja2.StrictUndefined # Per fer que es pari en els valors undefined.
@@ -80,6 +85,23 @@ print(__name__)
 # BD ==================================
 app.config.from_object(StringsConfiguracio)
 db.init_app(app)
+# =====================================
+
+# Sessions ============================
+login_manager = LoginManager(app)
+# En un navegador, podem escriure qualsevol url manualment (barra de dalt).
+#   Pot ser que hi hagi rutes protegides (ex.: només per usuaris amb la sessió
+#     iniciada).
+# Si escrvissin una d'aquestes rutes sense la sessió iniciada, redirigim a la 
+#   pàgina de login.
+login_manager.login_view = "pagina_login" 
+# Ens porta a aquesta ruta (posem el nom de la funció).
+
+@login_manager.user_loader
+def carrega_usuari(id_usuari):
+    print("Sessió iniciada amb l'usuari " + id_usuari)
+
+    return db.session.get(Usuari, int(id_usuari))
 # =====================================
 
 
@@ -143,6 +165,18 @@ def troba_hash_password(password_str: str) -> str:
 
     return salt_i_hash_en_str
 
+def verificar_password(hash_db_str:str, password_a_comprovar:str) -> bool:
+    hash_bd_bytes = binascii.unhexlify(hash_db_str.encode("utf-8"))
+    salt_bd = hash_bd_bytes[:16]
+    hash_bd = hash_bd_bytes[16:]
+
+    # Apliquem el salt al password que ha escrit l'usuari (pel login).
+    salt_password_a_comprovar = salt_bd + password_a_comprovar.encode("utf-8")
+    hash_password_a_comprovar = hashlib.sha256(salt_password_a_comprovar).digest()
+
+    return hash_bd == hash_password_a_comprovar
+
+
 @app.route("/registre", methods=["GET", "POST"])
 def pagina_registre():
     # Acció de la ruta en mode POST
@@ -156,15 +190,82 @@ def pagina_registre():
 
         hash_password = troba_hash_password(password_rebut)
 
+        # Guarar usuari a la BD ===============================
+        email_exitent = Usuari.query.filter_by(email=email_rebut).first()
+        print(email_exitent)
+        if email_exitent:
+            print("Error: aquest email ja està registrat.")
+            return render_template("registre.html", titol_pagina="Registre")# Afegir missatge error.
+        
+        nom_existent = Usuari.query.filter_by(nom_usuari=nom_rebut).first()
+        if nom_existent:
+            print("Error: aquest nom ja està registrat.")
+            return render_template("registre.html", titol_pagina="Registre")# Afegir missatge error.
+        
+        # Si arrbem en aquest punt, és que el podem guardar.
+        usuari = Usuari(
+            nom_usuari=nom_rebut, 
+            email=email_rebut, 
+            hash_password=hash_password)
+        
+        db.session.add(usuari)
+        db.session.commit()
+
+        # Iniciem sessió amb l'usuari registrat.
+        login_user(usuari)
+        # ==============================================================
+
         # El valor de url_for, és el nom de la funció, no de la ruta.
         return redirect(url_for("pagina_inici"))
     
     # Acció de la ruta en mode GET.
     return render_template("registre.html", titol_pagina="Registre")
 
+@app.route("/login", methods=["GET", "POST"])
+def pagina_login():
+
+    if request.method == "POST":
+        email_rebut = request.form["email"]
+        password_rebut = request.form["password"]
+
+        print(email_rebut)
+
+        usuari = Usuari.query.filter_by(email=email_rebut).first()
+
+        if usuari and verificar_password(usuari.hash_password, password_rebut):
+
+            # Fem login.
+            login_user(usuari)
+
+            return redirect(url_for("pagina_inici"))
+
+    
+    else:
+        return render_template("login.html", titol_pagina="Login")
+
+@app.route("/gestio_usuaris")
+@login_required
+def gestio_usuaris():
+    usuaris_bd = Usuari.query.all()
+    return render_template("gestio_usuaris.html", titol_pagina="Gestió usuaris", usuaris=usuaris_bd)
+
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for("pagina_inici"))
+
+
 @app.errorhandler(404)
 def pagina_error(e):
     return render_template("pagina_no_trobada.html"), 404
 
 if __name__ == "__main__":
+    
+    # DB ==========================
+    with app.app_context():
+        # Crear les taules de la BD si no existeixen ja.
+        db.create_all()
+    # =============================
+
     app.run(debug=True)

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block contingut %}
+
+<h2 class="card-title text-center mb-4">Fer Login</h2>
+
+<form action="/login" method="POST">
+
+    <div class="mb-3">
+        <label for="email" class="form-label">Correu electrònic</label>
+        <input type="email" class="form-control" id="email" name="email" placeholder="nom@exemple.com" required>
+    </div>
+
+    <div class="mb-3">
+        <label for="password" class="form-label">Contrasenya</label>
+        <input type="password" class="form-control" id="password" name="password" required>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100">Login</button>
+</form>
+
+{% endblock %}
